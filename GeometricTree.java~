@@ -1,0 +1,223 @@
+package comp2402a4;
+
+import java.util.Random;
+import java.util.*;
+
+public class GeometricTree extends BinaryTree<GeometricTreeNode> {
+
+	public GeometricTree() {
+		super (new GeometricTreeNode());
+	}
+
+	/**
+	 * Set the x and y-coordinates of each node such that it is between the
+	 * x-coordinate of its two children, no two nodes have the same
+	 * x-coordinate, and each level of the tree is drawn on separate y-coordinates.
+	 */
+
+ 		public void inorderDraw() {
+ 			assignLevels();
+ 			// TODO: use your code here instead
+ 			//a represents the next node in a left traversal
+ 			GeometricTreeNode a = firstNode();
+ 			//using a for loop to assign each node an x coordinate by order
+ 			for (int k = 0; a != nil; k++) {
+ 				a.position.x = k;
+ 				//here we update a to the next node in the traversal
+ 				a = nextNode(a);
+
+ 			}
+ 		}
+
+ 		protected void randomX(GeometricTreeNode u, Random r) {
+ 			if (u == null) {
+ 				return;
+ 			}
+ 			u.position.x = r.nextInt(60);
+ 			randomX(u.left, r);
+ 			randomX(u.right, r);
+ 		}
+
+ 		/**
+ 		 * Draw each node so that it's x-coordinate is as small as possible without
+ 		 * intersecting any other node at the same level the same as its parent's
+ 		 */
+ 		public void leftistDraw() {
+ 			assignLevels();
+ 			//create a variable that represents the root
+ 			GeometricTreeNode w= r;
+ 			//set the root postion to 0
+ 			w.position.x = 0;
+
+ 			Queue<GeometricTreeNode> queue = new ArrayDeque<GeometricTreeNode>();
+ 			queue.add(r);
+
+ 			while (!queue.isEmpty()) {
+
+ 				GeometricTreeNode i = queue.remove();
+
+ 				if (w.position.y == i.position.y) {
+
+ 					i.position.x = w.position.x + 1;
+
+ 					w = i;
+ 				} else {
+ 					i.position.x = 0;
+ 					w = i;
+ 				}
+
+ 				if (i.left != nil) queue.add(i.left);
+
+ 				if (i.right != nil) queue.add(i.right);
+
+ 			}
+
+ 			r.position.x = 0;
+
+ 		}
+
+ 		public void balancedDraw() {
+
+
+ 			settingXValue(r);
+ 			setSizes();
+ 			int x = 0;
+ 			int y = 0;
+
+ 			GeometricTreeNode currentNode = r;
+ 			do {
+ 				while (currentNode.left != nil || currentNode.right != nil) {
+
+ 					if (currentNode.right != nil && currentNode.left != nil) {
+ 						currentNode = findSmallerNode(currentNode);
+ 						y++;
+
+ 					} else {
+ 						if (currentNode.left != nil) {
+ 							currentNode = currentNode.left;
+ 						} else {
+ 							currentNode = currentNode.right;
+ 						}
+ 						x++;
+
+ 					}
+ 					setPosition(currentNode, x, y);
+
+ 				}
+ 				do {
+ 					currentNode = currentNode.parent;
+ 				} while (currentNode != nil
+ 						&& ((currentNode.left == nil || currentNode.right == nil) || findLargerNode(currentNode).position.x > 0));
+ 				if (currentNode == nil) {
+ 					break;
+ 				}
+ 				y = currentNode.position.y;
+ 				currentNode = findLargerNode(currentNode);
+ 				currentNode.position.y = y;
+ 				x++;
+ 				currentNode.position.x = x;
+ 			} while (true);
+
+ 		}
+
+ 		protected void settingXValue(GeometricTreeNode u) {
+ 			if (u == null) return;
+
+ 			u.position.x = 0;
+ 			settingXValue(u.left);
+ 			settingXValue(u.right);
+ 		}
+
+ 		protected void setPosition(GeometricTreeNode node, int x, int y) {
+ 			node.position.x = x;
+ 			node.position.y = y;
+ 		}
+
+ 		protected void assignLevels() {
+ 			assignLevels(r, 0);
+ 		}
+
+ 		protected int sizeOfSubtree(GeometricTreeNode u) {
+ 			//if the node does not have a nil as a child
+ 			//we just add the sizes of both children and add 1
+ 			if (u.left != nil && u.right != nil) return 1 + u.left.size + u.right.size;
+
+ 			//if the left child of node u is not null add it plus one
+ 			if (u.left != nil) return 1 + u.left.size;
+ 			//else if the right child is not null
+ 			else if (u.right != nil) return 1 + u.right.size;
+
+ 			//then both of its child are null then we have a size of one
+ 			else {return 1;	}
+ 		}
+
+ 		protected GeometricTreeNode nextNode2(GeometricTreeNode node) {
+ 			//if the node has a parent and node is the left child
+ 			if (node.parent != nil && node.parent.left == node) {
+ 				node = node.parent;
+ 				//if the orginal given node has a sibling then set node to the sibling
+ 				if (node.right != nil) {
+
+ 					node = node.right;
+
+ 					while (node.left != nil || node.right != nil) {
+
+ 						while (node.left != nil) {node = node.left;}
+
+
+ 						if (node.right != nil) {node = node.right;}
+
+ 					}
+ 				}
+ 			} else {
+ 				node = node.parent;
+ 			}
+ 			return node;
+ 		}
+
+ 		protected GeometricTreeNode findSmallerNode(GeometricTreeNode givenNode) {
+
+ 			if (givenNode.left.size < givenNode.right.size) {
+ 				return givenNode.left;
+ 			} else {
+ 				return givenNode.right;
+ 			}
+ 		}
+ 	//method will return the larger child of a node
+ 		protected GeometricTreeNode findLargerNode(GeometricTreeNode givenNode) {
+
+ 			if (givenNode.right.size > givenNode.left.size) {
+ 				return givenNode.right;
+ 			} else {
+ 				return givenNode.left;
+ 			}
+ 		}
+ 	//set the sizes for each subtree node
+ 		private void setSizes(){
+ 			GeometricTreeNode current = firstNode();
+ 			while (current != nil) {
+ 				current.size = sizeOfSubtree(current);
+ 				current = nextNode2(current);
+ 			}
+
+ 		}
+
+ 		protected void assignLevels(GeometricTreeNode k, int currentLevel) {
+ 			if (k == null) {
+ 				return;
+ 			}
+ 			k.position.y = currentLevel;
+ 			assignLevels(k.left, currentLevel + 1);
+ 			assignLevels(k.right, currentLevel + 1);
+ 		}
+
+
+	public static void main(String[] args) {
+		GeometricTree t = new GeometricTree();
+		galtonWatsonTree(t, 100);
+		System.out.println(t);
+		t.inorderDraw();
+		System.out.println(t);
+	}
+
+}
